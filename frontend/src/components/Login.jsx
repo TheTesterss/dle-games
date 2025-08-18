@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
-import { useAuth } from 'src/hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
 
 const Login = ({ navigateTo }) => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const { login } = useAuth();
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setMessage('');
-
-        if (!username || !password) {
-            setMessage('Entrez nom d\'utilisateur et mot de passe.');
-            return;
+        try {
+            await login(name, email, password);
+            navigateTo('/profile');
+        } catch (err) {
+            setMessage(err.message || "Erreur lors de l'inscription");
         }
-
-        login(username);
-        navigateTo('/profil');
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950 font-inter">
-            <div className="bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700/50 w-full max-w-md
-                        transform transition-all duration-500 ease-in-out hover:scale-105">
+            <div
+                className="bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700/50 w-full max-w-md
+                        transform transition-all duration-500 ease-in-out hover:scale-105"
+            >
                 <h2 className="text-4xl font-extrabold text-blue-600 text-center mb-8 drop-shadow-lg">Connexion</h2>
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
@@ -32,11 +32,11 @@ const Login = ({ navigateTo }) => {
                         </label>
                         <input
                             type="text"
-                            id="username"
+                            id="mail"
                             className="shadow-inner appearance-none border rounded-lg w-full py-3 px-4 text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 border-gray-700 transition duration-300"
-                            placeholder="Your username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Your mail"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                     </div>
@@ -54,9 +54,7 @@ const Login = ({ navigateTo }) => {
                             required
                         />
                     </div>
-                    {message && (
-                        <p className="text-red-500 text-sm text-center">{message}</p>
-                    )}
+                    {message && <p className="text-red-500 text-sm text-center">{message}</p>}
                     <button
                         type="submit"
                         className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg

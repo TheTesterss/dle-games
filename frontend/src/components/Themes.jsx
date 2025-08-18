@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import pokemonImage from 'src/assets/pokemon.png';
-import pokemonVideo from 'src/assets/pokemon.mp4';
-import marioImage from 'src/assets/mario.png';
-import marioVideo from 'src/assets/mario.mp4';
-import minecraftImage from "src/assets/minecraft.png";
-import minecraftVideo from "src/assets/minecraft.mp4";
-import valorantImage from "src/assets/valorant.png";
-import valorantVideo from "src/assets/valorant.mp4";
-import rocketleagueImage from "src/assets/rocketleague.png";
-import rocketleagueVideo from "src/assets/rocketleague.mp4";
+import pokemonImage from '../assets/pokemon.png';
+import pokemonVideo from '../assets/pokemon.mp4';
+import marioImage from '../assets/mario.png';
+import marioVideo from '../assets/mario.mp4';
+import minecraftImage from '../assets/minecraft.png';
+import minecraftVideo from '../assets/minecraft.mp4';
+import valorantImage from '../assets/valorant.png';
+import valorantVideo from '../assets/valorant.mp4';
+import rocketleagueImage from '../assets/rocketleague.png';
+import rocketleagueVideo from '../assets/rocketleague.mp4';
 
-const Home = ({ navigateTo }) => {
+const Themes = ({ navigateTo }) => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -19,36 +19,36 @@ const Home = ({ navigateTo }) => {
             try {
                 const data = [
                     {
-                        name: "pokemon",
+                        name: 'pokemon',
                         video: pokemonVideo,
                         playable: true,
                         image: pokemonImage
                     },
                     {
-                        name: "mario",
+                        name: 'mario',
                         video: marioVideo,
                         playable: false,
                         image: marioImage
                     },
                     {
-                        name: "minecraft",
+                        name: 'minecraft',
                         video: minecraftVideo,
                         playable: false,
                         image: minecraftImage
                     },
                     {
-                        name: "valorant",
+                        name: 'valorant',
                         video: valorantVideo,
                         playable: false,
                         image: valorantImage
                     },
                     {
-                        name: "rocket league",
+                        name: 'rocket league',
                         video: rocketleagueVideo,
                         playable: false,
                         image: rocketleagueImage
                     }
-                ]
+                ];
                 setCategories(data);
                 setLoading(false);
             } catch (error) {
@@ -68,7 +68,7 @@ const Home = ({ navigateTo }) => {
         const video = e.currentTarget.querySelector('video');
         if (video) {
             video.currentTime = 0;
-            video.play().catch(err => {
+            video.play().catch((err) => {
                 console.warn('Impossible de lire la vidéo:', err);
             });
         }
@@ -91,9 +91,9 @@ const Home = ({ navigateTo }) => {
     }
 
     return (
-        <main className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8">
+        <main className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 mt-20">
             <h2 className="text-4xl font-bold text-center mb-12 text-white">Thèmes Jouables</h2>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl w-full">
                 {categories.map((category, index) => (
                     <div
@@ -113,7 +113,7 @@ const Home = ({ navigateTo }) => {
                                     e.target.style.display = 'none';
                                 }}
                             />
-                            
+
                             <video
                                 className="absolute inset-0 w-full h-full object-cover transition-all duration-500 opacity-0 group-hover:opacity-100"
                                 muted
@@ -129,14 +129,12 @@ const Home = ({ navigateTo }) => {
                                     <span className="text-white text-lg">Vidéo non supportée</span>
                                 </div>
                             </video>
-                            
+
                             <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-20 transition-all duration-300"></div>
                         </div>
-                        
+
                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
-                            <h3 className="text-xl font-bold text-white capitalize tracking-wide">
-                                {category.name}
-                            </h3>
+                            <h3 className="text-xl font-bold text-white capitalize tracking-wide">{category.name}</h3>
                             {category.playable ? (
                                 <span className="inline-block mt-2 px-3 py-1 bg-green-500 text-white text-sm rounded-full">
                                     Jouable
@@ -150,7 +148,7 @@ const Home = ({ navigateTo }) => {
                     </div>
                 ))}
             </div>
-            
+
             {categories.length === 0 && !loading && (
                 <div className="text-center text-gray-400 mt-8">
                     <p className="text-xl">Aucune catégorie disponible pour le moment.</p>
@@ -160,4 +158,4 @@ const Home = ({ navigateTo }) => {
     );
 };
 
-export default Home;
+export default Themes;

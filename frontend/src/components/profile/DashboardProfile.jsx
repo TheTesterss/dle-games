@@ -1,26 +1,24 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import Session from '../../utils/Session';
+import { baseURL } from '../../utils/d';
 
 const DashboardProfil = () => {
-    const { currentUser, login } = useAuth();
+    const { currentUser, updateUser } = useAuth();
 
-        // Fetch using the backend
-    const [username, setUsername] = useState(currentUser?.username || '');
+    const [username, setUsername] = useState(currentUser?.name || '');
     const [email, setEmail] = useState('user@example.com');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
-
-        // Fetch using the backend
     const [avatar, setAvatar] = useState(currentUser?.avatar || 'https://placehold.co/100x100/007bff/ffffff?text=U');
     const [newAvatarFile, setNewAvatarFile] = useState(null);
     const fileInputRef = useRef(null);
 
-    // Fetch using the backend
     const [initialProfileData, setInitialProfileData] = useState({
-        username: currentUser?.username || '',
+        username: currentUser?.name || '',
         email: 'user@example.com',
-        avatar: currentUser?.avatar || 'https://placehold.co/100x100/007bff/ffffff?text=U',
+        avatar: currentUser?.avatar || 'https://placehold.co/100x100/007bff/ffffff?text=U'
     });
 
     const hasChanges = useCallback(() => {
@@ -40,7 +38,6 @@ const DashboardProfil = () => {
             }
         };
     }, [avatar, initialProfileData.avatar]);
-
 
     const handleAvatarClick = () => {
         fileInputRef.current.click();
@@ -74,30 +71,50 @@ const DashboardProfil = () => {
         let newAvatarUrl = avatar;
 
         if (newAvatarFile) {
-            newAvatarUrl = avatar;
-        }
+            try {
+                const formData = new FormData();
+                formData.append("avatar", newAvatarFile);
 
-        // Call the api to update user's information
+                const response = await fetch(`${baseURL}/create_avatar_link`, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+
+                if (!response.ok) throw new Error("Erreur lors de l'upload de l'avatar");
+
+                const data = await response.json();
+                console.log(data)
+                setAvatar(data.url);
+                newAvatarUrl = data.url;
+            } catch (err) {
+                setMessage(err.message);
+                return;
+            }
+        }
         const updatedUser = {
-            ...currentUser,
-            username: username,
-            email: email,
-            avatar: newAvatarUrl,
+            name: username,
+            mail: email,
+            avatar: newAvatarUrl
         };
 
-        login(updatedUser.username);
-
-        setInitialProfileData({
-            username: username,
-            email: email,
-            avatar: newAvatarUrl,
-        });
-
-        setPassword('');
-        setConfirmPassword('');
-        setNewAvatarFile(null);
-
-        setMessage('Profil modifié avec succès !');
+        const hashedPassword = password ? await Session.hashPassword(password) : undefined;
+        try {
+            await updateUser({ ...updatedUser, password: hashedPassword });
+            setInitialProfileData({
+                username,
+                email,
+                avatar: newAvatarUrl
+            });
+            setPassword('');
+            setConfirmPassword('');
+            setNewAvatarFile(null);
+            setMessage('Profil modifié avec succès !');
+        } catch (err) {
+            setMessage('Erreur lors de la mise à jour du profil.');
+            console.error(err);
+        }
     };
 
     const handleCancelChanges = () => {
@@ -194,7 +211,9 @@ const DashboardProfil = () => {
                     />
                 </div>
                 {message && (
-                    <p className={`text-center text-sm ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>
+                    <p
+                        className={`text-center text-sm ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}
+                    >
                         {message}
                     </p>
                 )}

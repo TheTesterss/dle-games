@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from 'src/hooks/useAuth';
+import { useAuth } from '../hooks/useAuth';
+import Session from '../utils/Session';
 
 const Signup = ({ navigateTo }) => {
     const [username, setUsername] = useState('');
@@ -7,30 +8,28 @@ const Signup = ({ navigateTo }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
-    const { register } = useAuth();
+    const { signup } = useAuth();
 
-    const handleSignup = (e) => {
+    const handleSignup = async (e) => {
         e.preventDefault();
         setMessage('');
-
-        if (!username || !email || !password || !confirmPassword) {
-            setMessage('Tous les champs sont requis.');
-            return;
-        }
-
         if (password !== confirmPassword) {
-            setMessage('Les mots de passe ne correspondent pas.');
-            return;
+            setMessage('Les mots de passe ne correspondent pas');
         }
-
-        register(username, password);
-        navigateTo('/profil');
+        try {
+            await signup(username, email, password);
+            navigateTo('/profile');
+        } catch (err) {
+            setMessage(err.message || "Erreur lors de l'inscription");
+        }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-950 font-inter">
-            <div className="bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700/50 w-full max-w-md
-                        transform transition-all duration-500 ease-in-out hover:scale-105">
+        <div className="min-h-screen flex items-center justify-center p-4 font-inter">
+            <div
+                className="bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-700/50 w-full max-w-md
+                        transform transition-all duration-500 ease-in-out hover:scale-105"
+            >
                 <h2 className="text-4xl font-extrabold text-blue-600 text-center mb-8 drop-shadow-lg">S'inscrire</h2>
                 <form onSubmit={handleSignup} className="space-y-6">
                     <div>
@@ -89,9 +88,7 @@ const Signup = ({ navigateTo }) => {
                             required
                         />
                     </div>
-                    {message && (
-                        <p className="text-red-500 text-sm text-center">{message}</p>
-                    )}
+                    {message && <p className="text-red-500 text-sm text-center">{message}</p>}
                     <button
                         type="submit"
                         className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-lg

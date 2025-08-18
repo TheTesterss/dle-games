@@ -1,43 +1,134 @@
-import { useState } from "react";
-import { AuthContext } from "src/contexts/authContext";
-import SessionManager from "src/utils/Session";
+import { useState, useEffect } from 'react';
+import { AuthContext } from '../contexts/authContext';
+import Session from '../utils/Session';
+import FriendRequestSession from '../utils/FriendRequestSession';
+import FriendsSession from '../utils/FriendsSession';
 
-export const AuthProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(localStorage.getItem('isAuthenticated') === 'true');
-    const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem('currentUser')) || null);
+export const AuthProvider = ({ children, navigateTo }) => {
+    const [currentUser, setCurrentUser] = useState(Session.get());
+    const [isAuthenticated, setIsAuthenticated] = useState(!!Session.get());
+    const [friendRequests, setFriendRequests] = useState([]);
+    const [friends, setFriends] = useState([]);
 
-    const session = new SessionManager();
+    useEffect(() => {
+        setCurrentUser(Session.get());
+        setIsAuthenticated(!!Session.get());
+    }, []);
 
-    const login = (userData) => {
-        if(!session.isValid()) {
-            // Backend login logic
+    useEffect(() => {
+        const interval = setInterval(() => {
+            Session.clearExpired();
+            setCurrentUser(Session.get());
+            setIsAuthenticated(!!Session.get());
+        }, 360_000); // toutes les 6 minutes
 
+        return () => clearInterval(interval);
+    }, []);
 
-            session.create(userData)
-            setIsAuthenticated(true)
-            return null;
+    /*useEffect(() => {
+        if (currentUser && currentUser._id) {
+            fetchFriends(currentUser._id);
+            fetchFriendRequests(currentUser._id);
+        } else {
+            setFriends([]);
+            setFriendRequests([]);
         }
-        setIsAuthenticated(true);
-        // fetch user data from the backend
-        setCurrentUser(null);
-    }
+    }, [currentUser]);*/
 
-    const logout = () => {
-        if(session.isValid()) {
-            session.destroy();
-            setIsAuthenticated(false);
-            setCurrentUser(null);
-        }
-    }
+    const fetchFriendRequests = async (userId) => {
+        const requests = await FriendRequestSession.getAll(userId);
+        setFriendRequests(requests);
+        return requests;
+    };
 
-    const register = () => {
-        // Register using backend
+    const fetchFriends = async (userId) => {
+        const list = await FriendsSession.getAll(userId);
+        setFriends(list);
+        return list;
+    };
+
+    const sendFriendRequest = async (from, to) => {
+        return await FriendRequestSession.send(from, to);
+    };
+
+    const acceptFriendRequest = async (reqId) => {
+        return await FriendRequestSession.accept(reqId);
+    };
+
+    const cancelFriendRequest = async (reqId) => {
+        return await FriendRequestSession.cancel(reqId);
+    };
+
+    const denyFriendRequest = async (reqId) => {
+        return await FriendRequestSession.deny(reqId);
+    };
+
+    const removeFriend = async (userId, targetId) => {
+        return await FriendsSession.remove(userId, targetId);
+    };
+
+    const getUser = async (name) => {
+        const user = await Session.getUser(name);
+        setCurrentUser(user);
+        return user;
+    };
+
+    const getUsers = async () => {
+        const users = await Session.getUsers();
+        return users;
+    };
+
+    const login = async (username, password) => {
+        const user = await Session.login(username, password);
+        setCurrentUser(user);
         setIsAuthenticated(true);
+        if (navigateTo) navigateTo('/profile');
+        return user;
+    };
+
+    const signup = async (username, email, password) => {
+        const user = await Session.signup(username, email, password);
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        if (navigateTo) navigateTo('/profile');
+        return user;
+    };
+
+    const logout = async () => {
+        await Session.logout();
         setCurrentUser(null);
-    }
+        setIsAuthenticated(false);
+        if (navigateTo) navigateTo('/login');
+    };
+
+    const updateUser = async (userData) => {
+        const updatedUser = await Session.updateUser(userData);
+        setCurrentUser(updatedUser);
+        return updatedUser;
+    };
 
     return (
-        <AuthContext.Provider value={{ session, isAuthenticated, currentUser, login, logout, register }}>
+        <AuthContext.Provider
+            value={{
+                currentUser,
+                isAuthenticated,
+                login,
+                signup,
+                getUser,
+                logout,
+                getUsers,
+                updateUser,
+                removeFriend,
+                denyFriendRequest,
+                cancelFriendRequest,
+                acceptFriendRequest,
+                sendFriendRequest,
+                fetchFriendRequests,
+                fetchFriends,
+                friends,
+                friendRequests
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );
