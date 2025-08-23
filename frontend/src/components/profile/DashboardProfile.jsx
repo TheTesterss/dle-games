@@ -7,7 +7,7 @@ const DashboardProfil = () => {
     const { currentUser, updateUser } = useAuth();
 
     const [username, setUsername] = useState(currentUser?.name || '');
-    const [email, setEmail] = useState('user@example.com');
+    const [email, setEmail] = useState(currentUser?.mail || '');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
@@ -23,7 +23,7 @@ const DashboardProfil = () => {
 
     const hasChanges = useCallback(() => {
         const isUsernameChanged = username !== initialProfileData.username;
-        const isEmailChanged = email !== initialProfileData.email;
+        const isEmailChanged = email !== initialProfileData.email && email !== '';
         const isPasswordChanged = password !== '';
         const isAvatarChanged = avatar !== initialProfileData.avatar;
 
@@ -73,9 +73,9 @@ const DashboardProfil = () => {
         if (newAvatarFile) {
             try {
                 const formData = new FormData();
-                formData.append("avatar", newAvatarFile);
+                formData.append('avatar', newAvatarFile);
 
-                const response = await fetch(`${baseURL}/create_avatar_link`, {
+                const response = await fetch(`${baseURL}/create_link`, {
                     method: 'POST',
                     body: formData,
                     credentials: 'include',
@@ -85,7 +85,6 @@ const DashboardProfil = () => {
                 if (!response.ok) throw new Error("Erreur lors de l'upload de l'avatar");
 
                 const data = await response.json();
-                console.log(data)
                 setAvatar(data.url);
                 newAvatarUrl = data.url;
             } catch (err) {
@@ -179,9 +178,8 @@ const DashboardProfil = () => {
                         id="email"
                         className={`shadow-inner appearance-none border rounded-lg w-full py-3 px-4 text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 transition duration-300
                                     ${isFieldChanged(email, initialProfileData.email) ? 'border-green-500' : 'border-gray-700'}`}
-                        value={email}
+                        placeholder={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        required
                     />
                 </div>
                 <div>

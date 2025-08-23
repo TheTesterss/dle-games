@@ -7,8 +7,8 @@ import FriendsSession from '../utils/FriendsSession';
 export const AuthProvider = ({ children, navigateTo }) => {
     const [currentUser, setCurrentUser] = useState(Session.get());
     const [isAuthenticated, setIsAuthenticated] = useState(!!Session.get());
-    const [friendRequests, setFriendRequests] = useState([]);
-    const [friends, setFriends] = useState([]);
+    const [currentUserFriendRequests, setCurrentUserFriendRequests] = useState([]);
+    const [currentUserFriends, setCurrentUserFriends] = useState([]);
 
     useEffect(() => {
         setCurrentUser(Session.get());
@@ -36,14 +36,14 @@ export const AuthProvider = ({ children, navigateTo }) => {
     }, [currentUser]);*/
 
     const fetchFriendRequests = async (userId) => {
-        const requests = await FriendRequestSession.getAll(userId);
-        setFriendRequests(requests);
+        const requests = await FriendsSession.getRequests(userId);
+        setCurrentUserFriendRequests(requests);
         return requests;
     };
 
     const fetchFriends = async (userId) => {
         const list = await FriendsSession.getAll(userId);
-        setFriends(list);
+        setCurrentUserFriends(list);
         return list;
     };
 
@@ -69,7 +69,6 @@ export const AuthProvider = ({ children, navigateTo }) => {
 
     const getUser = async (name) => {
         const user = await Session.getUser(name);
-        setCurrentUser(user);
         return user;
     };
 
@@ -95,7 +94,7 @@ export const AuthProvider = ({ children, navigateTo }) => {
     };
 
     const logout = async () => {
-        await Session.logout();
+        Session.logout();
         setCurrentUser(null);
         setIsAuthenticated(false);
         if (navigateTo) navigateTo('/login');
@@ -125,8 +124,8 @@ export const AuthProvider = ({ children, navigateTo }) => {
                 sendFriendRequest,
                 fetchFriendRequests,
                 fetchFriends,
-                friends,
-                friendRequests
+                currentUserFriends,
+                currentUserFriendRequests
             }}
         >
             {children}

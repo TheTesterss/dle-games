@@ -4,7 +4,7 @@ const {
   listUsersController,
   createAccountController,
   updateAccountController,
-  deleteAccountController
+  deleteAccountController,
 } = require("../controllers/account.controller");
 
 const router = express.Router();

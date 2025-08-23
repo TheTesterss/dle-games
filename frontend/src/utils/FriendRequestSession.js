@@ -1,12 +1,21 @@
 import { baseURL } from './d';
 
 class FriendRequestSession {
-    static async getAll(userId) {
-        const res = await fetch(`${baseURL}/${userId}/requests`, {
+    static async getAll() {
+        const res = await fetch(`${baseURL}/requests`, {
             credentials: 'include',
             mode: 'cors'
         });
         if (!res.ok) throw new Error('Erreur récupération requêtes');
+        return await res.json();
+    }
+
+    static async get(userId) {
+        const res = await fetch(`${baseURL}/requests/${userId}`, {
+            credentials: 'include',
+            mode: 'cors'
+        });
+        if (!res.ok) throw new Error('Erreur récupération requête');
         return await res.json();
     }
 

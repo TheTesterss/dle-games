@@ -19,31 +19,31 @@ const Themes = ({ navigateTo }) => {
             try {
                 const data = [
                     {
-                        name: 'pokemon',
+                        name: '',
                         video: pokemonVideo,
                         playable: true,
                         image: pokemonImage
                     },
                     {
-                        name: 'mario',
+                        name: '',
                         video: marioVideo,
                         playable: false,
                         image: marioImage
                     },
                     {
-                        name: 'minecraft',
+                        name: '',
                         video: minecraftVideo,
                         playable: false,
                         image: minecraftImage
                     },
                     {
-                        name: 'valorant',
+                        name: '',
                         video: valorantVideo,
                         playable: false,
                         image: valorantImage
                     },
                     {
-                        name: 'rocket league',
+                        name: '',
                         video: rocketleagueVideo,
                         playable: false,
                         image: rocketleagueImage

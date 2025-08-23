@@ -7,7 +7,6 @@ import PageNotFound from './components/PageNotFound';
 import UserSearch from './components/UserSearch';
 import LeaderboardPreview from './components/LeaderboardPreview';
 import PageNotImplemented from './components/PageNotImplemented';
-import Pokemons from './components/Pokemons';
 import Privacy from './components/Privacy';
 import Terms from './components/Terms';
 import Navigation from './components/Navigation';
@@ -18,6 +17,7 @@ import { useAuth } from './hooks/useAuth';
 import { AuthProvider } from './providers/authProvider';
 import UserProfile from './components/UserProfile';
 import Leaderboard from './components/Leaderboard';
+import Forum from './components/Forum';
 
 const DashboardWrapper = ({ navigateTo, path }) => {
     const { isAuthenticated } = useAuth();
@@ -76,8 +76,6 @@ function App() {
                 return renderCommonPage(UserSearch, Themes, LeaderboardPreview);
             case '/themes':
                 return renderCommonPage(Themes);
-            case '/pokemon':
-                return renderCommonPage(Pokemons);
             case '/user':
                 return renderCommonPage(UserProfile);
             case '/leaderboard':
@@ -87,7 +85,7 @@ function App() {
             case '/signup':
                 return <Signup navigateTo={navigateTo} />;
             case '/forum':
-                return renderCommonPage(PageNotImplemented);
+                return renderCommonPage(Forum);
             case '/privacy':
                 return renderCommonPage(Privacy);
             case '/terms':

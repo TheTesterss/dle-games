@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 
 const Login = ({ navigateTo }) => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
     const { login } = useAuth();
@@ -11,7 +11,7 @@ const Login = ({ navigateTo }) => {
         e.preventDefault();
         setMessage('');
         try {
-            await login(name, email, password);
+            await login(username, password);
             navigateTo('/profile');
         } catch (err) {
             setMessage(err.message || "Erreur lors de l'inscription");
@@ -34,9 +34,9 @@ const Login = ({ navigateTo }) => {
                             type="text"
                             id="mail"
                             className="shadow-inner appearance-none border rounded-lg w-full py-3 px-4 text-gray-200 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-800 border-gray-700 transition duration-300"
-                            placeholder="Your mail"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Your username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             required
                         />
                     </div>

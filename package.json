@@ -1,0 +1,26 @@
+{
+  "private": true,
+  "name": "dle-games",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/TheTesterss/dle-games.git",
+  "author": "TheTesterss <morganjaouen65636@gmail.com>",
+  "license": "MIT",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"yarn dev:server\" \"yarn dev:client\"",
+    "dev:server": "yarn workspace server dev",
+    "dev:client": "yarn workspace client dev",
+    "build": "yarn build:server && yarn build:client",
+    "build:server": "yarn workspace server build",
+    "build:client": "yarn workspace client build",
+    "install:all": "yarn install --force"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "prettier": "^3.6.2"
+  }
+}

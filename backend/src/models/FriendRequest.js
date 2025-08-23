@@ -12,11 +12,6 @@ const FriendRequestSchema = new Schema(
       ref: "Account",
       required: true,
     },
-    status: {
-      type: String,
-      enum: ["pending", "accepted", "rejected"],
-      default: "pending",
-    },
   },
   {
     timestamps: true,

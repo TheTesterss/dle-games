@@ -1,27 +1,85 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import FriendRequestSession from '../../utils/FriendRequestSession';
+import Session from '../../utils/Session';
 
 const DashboardFriends = () => {
     const {
         removeFriend,
-        _denyFriendRequest,
-        _acceptFriendRequest,
-        friends: currentUserFriends,
-        friendRequests,
+        cancelFriendRequest,
+        denyFriendRequest,
+        acceptFriendRequest,
+        fetchFriends,
+        fetchFriendRequests,
         currentUser
     } = useAuth();
-    const [friends, setFriends] = useState(currentUserFriends);
-    const [pendingRequests, setPendingRequests] = useState(
-        friendRequests.filter((req) => req.from === currentUser._id)
-    );
-    const [sentRequests, setSentRequests] = useState(friendRequests.filter((req) => req.to === currentUser._id));
+    const [friends, setFriends] = useState([]);
+    const [pendingRequests, setPendingRequests] = useState([]);
+    const [sentRequests, setSentRequests] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState(null);
     const [sortOrder, setSortOrder] = useState('asc');
 
-    const handleDeleteFriend = (id) => {
-        setFriends(friends.filter((friend) => friend.id !== id));
-        removeFriend(currentUser._id, id);
+    useEffect(() => {
+        const fetchData = async () => {
+            const friendsList = await fetchFriends(currentUser._id);
+            const friendRequestsIds = await fetchFriendRequests(currentUser._id);
+            const friendRequestsList = await Promise.all(friendRequestsIds.map((req) => FriendRequestSession.get(req)));
+
+            const sortedFriends = friendsList.sort((a, b) => {
+                return new Date(b.since) - new Date(a.since);
+            });
+            const outgoingRequests = friendRequestsList.filter((req) => req.to === currentUser._id);
+            const incomingRequests = friendRequestsList.filter((req) => req.from === currentUser._id);
+
+            const pendingRequestsPromises = outgoingRequests.map(async (req) => {
+                const user = await Session.getUserById(req.from);
+                return {
+                    userId: req.from,
+                    _id: req._id,
+                    name: user.name,
+                    avatar: user.avatar,
+                    date: new Date(req.createdAt).toLocaleDateString()
+                };
+            });
+
+            const sentRequestsPromises = incomingRequests.map(async (req) => {
+                const user = await Session.getUserById(req.to);
+                return {
+                    userId: req.from,
+                    _id: req._id,
+                    name: user.name,
+                    avatar: user.avatar,
+                    date: new Date(req.createdAt).toLocaleDateString()
+                };
+            });
+
+            const friendsListPromises = sortedFriends.map(async (friend) => {
+                const f = await Session.getUserById(friend);
+                return {
+                    _id: f._id,
+                    name: f.name,
+                    avatar: f.avatar,
+                    since: 'Unavailable',
+                    matchesPlayed: -1,
+                    winRate: -1
+                };
+            });
+
+            const finalFriendsList = await Promise.all(friendsListPromises);
+            const pendingRequests = await Promise.all(pendingRequestsPromises);
+            const sentRequests = await Promise.all(sentRequestsPromises);
+
+            setPendingRequests(pendingRequests);
+            setSentRequests(sentRequests);
+            setFriends(finalFriendsList);
+        };
+        fetchData();
+    }, [currentUser._id, fetchFriends, fetchFriendRequests]);
+
+    const handleDeleteFriend = async (id) => {
+        console.log(`Removing friend with ID: ${id}`);
+        await removeFriend(currentUser._id, id);
     };
 
     const handleFilter = (e) => {
@@ -37,32 +95,20 @@ const DashboardFriends = () => {
         }
     };
 
-    const handleAcceptRequest = (id) => {
-        const accepted = pendingRequests.find((req) => req.id === id);
-        setFriends([
-            ...friends,
-            {
-                id: accepted.id,
-                avatar: accepted.avatar,
-                pseudo: accepted.pseudo,
-                since: new Date().toISOString().slice(0, 10),
-                matchesPlayed: 0,
-                winRate: 0
-            }
-        ]);
-        setPendingRequests(pendingRequests.filter((req) => req.id !== id));
+    const handleAcceptRequest = async (id) => {
+        await acceptFriendRequest(id);
     };
 
-    const handleRejectRequest = (id) => {
-        setPendingRequests(pendingRequests.filter((req) => req.id !== id));
+    const handleRejectRequest = async (id) => {
+        await denyFriendRequest(id);
     };
 
-    const handleCancelSentRequest = (id) => {
-        setSentRequests(sentRequests.filter((req) => req.id !== id));
+    const handleCancelSentRequest = async (id) => {
+        await cancelFriendRequest(id);
     };
 
     const sortedAndFilteredFriends = [...friends]
-        .filter((friend) => friend.pseudo.toLowerCase().includes(searchTerm.toLowerCase()))
+        .filter((friend) => friend.name.toLowerCase().includes(searchTerm.toLowerCase()))
         .sort((a, b) => {
             if (!sortBy) return 0;
 
@@ -146,23 +192,23 @@ const DashboardFriends = () => {
                             <tbody className="text-gray-200 text-sm font-light">
                                 {sortedAndFilteredFriends.map((friend) => (
                                     <tr
-                                        key={friend.id}
+                                        key={friend._id}
                                         className="border-b border-gray-700 hover:bg-gray-700 transition duration-200"
                                     >
                                         <td className="py-3 px-6 text-left whitespace-nowrap">
                                             <img
                                                 src={friend.avatar}
-                                                alt={friend.pseudo}
+                                                alt={friend.name}
                                                 className="w-10 h-10 rounded-full"
                                             />
                                         </td>
-                                        <td className="py-3 px-6 text-left">{friend.pseudo}</td>
+                                        <td className="py-3 px-6 text-left">{friend.name}</td>
                                         <td className="py-3 px-6 text-left">{friend.since}</td>
                                         <td className="py-3 px-6 text-left">{friend.matchesPlayed}</td>
                                         <td className="py-3 px-6 text-left">{friend.winRate}%</td>
                                         <td className="py-3 px-6 text-center">
                                             <button
-                                                onClick={() => handleDeleteFriend(friend.id)}
+                                                onClick={() => handleDeleteFriend(friend._id)}
                                                 className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-lg text-xs transition duration-300"
                                             >
                                                 Supprimer
@@ -194,23 +240,23 @@ const DashboardFriends = () => {
                             <tbody className="text-gray-200 text-sm font-light">
                                 {pendingRequests.map((req) => (
                                     <tr
-                                        key={req.id}
+                                        key={req.userId}
                                         className="border-b border-gray-700 hover:bg-gray-700 transition duration-200"
                                     >
                                         <td className="py-3 px-6 text-left whitespace-nowrap">
-                                            <img src={req.avatar} alt={req.pseudo} className="w-10 h-10 rounded-full" />
+                                            <img src={req.avatar} alt={req.name} className="w-10 h-10 rounded-full" />
                                         </td>
-                                        <td className="py-3 px-6 text-left">{req.pseudo}</td>
+                                        <td className="py-3 px-6 text-left">{req.name}</td>
                                         <td className="py-3 px-6 text-left">{req.date}</td>
                                         <td className="py-3 px-6 text-center space-x-2">
                                             <button
-                                                onClick={() => handleAcceptRequest(req.id)}
+                                                onClick={() => handleAcceptRequest(req._id)}
                                                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-lg text-xs transition duration-300"
                                             >
                                                 Accepter
                                             </button>
                                             <button
-                                                onClick={() => handleRejectRequest(req.id)}
+                                                onClick={() => handleRejectRequest(req._id)}
                                                 className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-lg text-xs transition duration-300"
                                             >
                                                 Refuser
@@ -242,17 +288,17 @@ const DashboardFriends = () => {
                             <tbody className="text-gray-200 text-sm font-light">
                                 {sentRequests.map((req) => (
                                     <tr
-                                        key={req.id}
+                                        key={req.userId}
                                         className="border-b border-gray-700 hover:bg-gray-700 transition duration-200"
                                     >
                                         <td className="py-3 px-6 text-left whitespace-nowrap">
-                                            <img src={req.avatar} alt={req.pseudo} className="w-10 h-10 rounded-full" />
+                                            <img src={req.avatar} alt={req.name} className="w-10 h-10 rounded-full" />
                                         </td>
-                                        <td className="py-3 px-6 text-left">{req.pseudo}</td>
+                                        <td className="py-3 px-6 text-left">{req.name}</td>
                                         <td className="py-3 px-6 text-left">{req.date}</td>
                                         <td className="py-3 px-6 text-center">
                                             <button
-                                                onClick={() => handleCancelSentRequest(req.id)}
+                                                onClick={() => handleCancelSentRequest(req._id)}
                                                 className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded-lg text-xs transition duration-300"
                                             >
                                                 Annuler

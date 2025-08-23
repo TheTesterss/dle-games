@@ -6,7 +6,16 @@ class FriendsSession {
             credentials: 'include',
             mode: 'cors'
         });
-        if (!res.ok) throw new Error(`Erreur récupération amis ${userId}`);
+        if (!res.ok) throw new Error(`Erreur récupération amis`);
+        return await res.json();
+    }
+
+    static async getRequests(userId) {
+        const res = await fetch(`${baseURL}/friends/${userId}/requests`, {
+            credentials: 'include',
+            mode: 'cors'
+        });
+        if (!res.ok) throw new Error(`Erreur récupération requêtes`);
         return await res.json();
     }
 

@@ -3,36 +3,33 @@ const FriendsModel = require("../models/Friends");
 
 const acceptRequest = async (requestId) => {
   try {
-    const request = await FriendRequestModel.findOne({ id: requestId });
+    const request = await FriendRequestModel.findOne({ _id: requestId });
 
     if (!request) {
       throw new Error("Friend request not found");
     }
 
-    await FriendRequestModel.findOneAndUpdate(
-      { id: requestId },
-      { $set: { status: "accepted" } },
-    );
-
     await FriendsModel.findOneAndUpdate(
-      { id: request.from },
+      { user: request.from },
       { $addToSet: { list: request.to } },
     );
 
     await FriendsModel.findOneAndUpdate(
-      { id: request.to },
+      { user: request.to },
       { $addToSet: { list: request.from } },
     );
 
     await FriendsModel.findOneAndUpdate(
-      { id: request.to },
+      { user: request.to },
       { $pull: { pending: requestId } },
     );
 
     await FriendsModel.findOneAndUpdate(
-      { id: request.from },
+      { user: request.from },
       { $pull: { pending: requestId } },
     );
+
+    await FriendRequestModel.findOneAndDelete({ _id: requestId });
 
     return { success: true };
   } catch (e) {
@@ -42,25 +39,22 @@ const acceptRequest = async (requestId) => {
 
 const denyRequest = async (requestId) => {
   try {
-    const request = await FriendRequestModel.findOne({ id: requestId });
+    const request = await FriendRequestModel.findOne({ _id: requestId });
 
     if (!request) {
       throw new Error("Friend request not found");
     }
 
-    await FriendRequestModel.findOneAndUpdate(
-      { id: requestId },
-      { $set: { status: "rejected" } },
+    await FriendsModel.findOneAndUpdate(
+      { user: request.to },
+      { $pull: { pending: requestId } },
+    );
+    await FriendsModel.findOneAndUpdate(
+      { user: request.from },
+      { $pull: { pending: requestId } },
     );
 
-    await FriendsModel.findOneAndUpdate(
-      { id: request.to },
-      { $pull: { pending: requestId } },
-    );
-    await FriendsModel.findOneAndUpdate(
-      { id: request.from },
-      { $pull: { pending: requestId } },
-    );
+    await FriendRequestModel.findOneAndDelete({ _id: requestId });
 
     return { success: true };
   } catch (e) {
@@ -70,19 +64,20 @@ const denyRequest = async (requestId) => {
 
 const createRequest = async (fromUserId, toUserId) => {
   try {
-    const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
     const newRequest = new FriendRequestModel({
-      id: requestId,
       from: fromUserId,
       to: toUserId,
-      status: "pending",
     });
 
     await newRequest.save();
     await FriendsModel.findOneAndUpdate(
-      { id: toUserId },
-      { $addToSet: { pending: requestId } },
+      { user: toUserId },
+      { $addToSet: { pending: newRequest._id } },
+    );
+
+    await FriendsModel.findOneAndUpdate(
+      { user: fromUserId },
+      { $addToSet: { pending: newRequest._id } },
     );
 
     return newRequest;
@@ -93,25 +88,47 @@ const createRequest = async (fromUserId, toUserId) => {
 
 const cancelRequest = async (requestId) => {
   try {
-    const request = await FriendRequestModel.findOne({ id: requestId });
+    const request = await FriendRequestModel.findOne({ _id: requestId });
 
     if (!request) {
       throw new Error("Friend request not found");
     }
 
-    await FriendRequestModel.findOneAndDelete({ id: requestId });
     await FriendsModel.findOneAndUpdate(
-      { id: request.to },
+      { user: request.to },
       { $pull: { pending: requestId } },
     );
     await FriendsModel.findOneAndUpdate(
-      { id: request.from },
+      { user: request.from },
       { $pull: { pending: requestId } },
     );
+
+    await FriendRequestModel.findOneAndDelete({ _id: requestId });
 
     return { success: true };
   } catch (e) {
     throw new Error("Error deleting friend request: " + e.message);
+  }
+};
+
+const getAllRequests = async () => {
+  try {
+    const requests = await FriendRequestModel.find({});
+    return requests;
+  } catch (e) {
+    throw new Error("Error fetching all friend requests: " + e.message);
+  }
+};
+
+const getRequest = async (requestId) => {
+  try {
+    const request = await FriendRequestModel.findOne({ _id: requestId });
+    if (!request) {
+      throw new Error("Friend request not found");
+    }
+    return request;
+  } catch (e) {
+    throw new Error("Error fetching friend request: " + e.message);
   }
 };
 
@@ -120,4 +137,6 @@ module.exports = {
   denyRequest,
   cancelRequest,
   createRequest,
+  getAllRequests,
+  getRequest,
 };
