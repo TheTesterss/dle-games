@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const account_controller_1 = require("../controllers/account.controller");
+const router = (0, express_1.Router)();
+router.post("/", account_controller_1.createAccountController);
+router.patch("/:id", account_controller_1.updateAccountController);
+router.delete("/:id", account_controller_1.deleteAccountController);
+router.get("/", account_controller_1.listUsersController);
+router.get("/:id", account_controller_1.getUserController);
+router.get("/:id/logs", account_controller_1.getLogsController);
+router.get("/:id/stats_history", account_controller_1.getStatsHistoryController);
+exports.default = router;

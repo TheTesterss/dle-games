@@ -1,0 +1,61 @@
+
+> dle-games@0.0.0 lint
+> eslint .
+
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\ContextMenu.jsx
+  2:10  error  'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\Forum.jsx
+  77:34  error  'err' is defined but never used  no-unused-vars
+  83:22  error  'err' is defined but never used  no-unused-vars
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\ForumPost.jsx
+  115:41  error  'currentUserFriends' is not defined  no-undef
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\MentionText.jsx
+  48:33  error  'idx' is defined but never used  no-unused-vars
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\Navigation.jsx
+  38:8  warning  React Hook useEffect has a missing dependency: 'handleClickOutside'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\Pokemon.jsx
+    48:12  error    'pokemonList' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                             no-unused-vars
+    55:11  error    'modes' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                   no-unused-vars
+   143:12  warning  React Hook React.useEffect has a missing dependency: 'fetchMore'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+   151:12  warning  React Hook React.useEffect has missing dependencies: 'fetchMore' and 'isOpen'. Either include them or remove the dependency array       react-hooks/exhaustive-deps
+   165:12  warning  React Hook React.useEffect has a missing dependency: 'fetchMore'. Either include it or remove the dependency array                      react-hooks/exhaustive-deps
+   393:8   warning  React Hook useEffect has missing dependencies: 'resetGame' and 'showResultMessage'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   405:8   warning  React Hook useEffect has a missing dependency: 'players'. Either include it or remove the dependency array                              react-hooks/exhaustive-deps
+  1017:49  error    'navigateTo' is not defined                                                                                                             no-undef
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\PostCard.jsx
+  233:8   warning  React Hook useEffect has a missing dependency: 'currentUserId'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  273:17  error    'commentVideoRef' is not defined                                                                                  no-undef
+  273:42  error    'commentVideoRef' is not defined                                                                                  no-undef
+  700:42  error    'commentVideoRef' is not defined                                                                                  no-undef
+  709:52  error    'commentVideoRef' is not defined                                                                                  no-undef
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\PrivateChat.jsx
+   41:12  error    'showOptionsId' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u            no-unused-vars
+   41:27  error    'setShowOptionsId' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u         no-unused-vars
+  108:8   warning  React Hook useEffect has a missing dependency: 'page'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\UserProfile.jsx
+  114:8  warning  React Hook useEffect has a missing dependency: 'navigateTo'. Either include it or remove the dependency array. If 'navigateTo' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\components\UserSearch.jsx
+  42:34  error  'err' is defined but never used  no-unused-vars
+  48:22  error  'err' is defined but never used  no-unused-vars
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\providers\authProvider.jsx
+   42:8   warning  React Hook useEffect has a missing dependency: 'currentUser'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  127:22  error    'err' is defined but never used                                                                                 no-unused-vars
+  219:11  error    'getUserById' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+
+C:\Users\morga\Documents\dlegames\dle-games\frontend\src\utils\FriendsSession.js
+  12:18  error  'error' is defined but never used  no-unused-vars
+  25:18  error  'error' is defined but never used  no-unused-vars
+
+✖ 30 problems (20 errors, 10 warnings)
+

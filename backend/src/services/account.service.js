@@ -1,10 +1,49 @@
 const AccountModel = require("../models/Account");
 const FriendsModel = require("../models/Friends");
 
+const toErrorMessage = (error, fallback = "Unknown error") => {
+  if (!error) return fallback;
+  if (typeof error === "string") return error;
+  if (typeof error.message === "string") return error.message;
+  if (error.errors && typeof error.errors === "object") {
+    const fieldMessages = Object.values(error.errors)
+      .map((entry) => entry && entry.message)
+      .filter((msg) => typeof msg === "string");
+    if (fieldMessages.length > 0) return fieldMessages.join(" | ");
+  }
+  try {
+    return JSON.stringify(error);
+  } catch (_) {
+    return fallback;
+  }
+};
+
 const createAccount = async (userData) => {
   try {
+    const name = typeof userData?.name === "string" ? userData.name.trim() : "";
+    const mail = typeof userData?.mail === "string" ? userData.mail.trim().toLowerCase() : "";
+    const password = typeof userData?.password === "string" ? userData.password : "";
+    const avatar = typeof userData?.avatar === "string" ? userData.avatar.trim() : "";
+
+    if (!name || !mail || !password || !avatar) {
+      const error = new Error("Champs requis manquants: name, mail, password, avatar");
+      error.name = "ValidationError";
+      throw error;
+    }
+
+    const existing = await AccountModel.findOne({ $or: [{ mail }, { name }] });
+    if (existing) {
+      const error = new Error("Un compte avec cet email ou ce pseudo existe deja");
+      error.name = "DuplicateAccount";
+      throw error;
+    }
+
     const newAccount = new AccountModel({
       ...userData,
+      name,
+      mail,
+      password,
+      avatar,
       desactivated: false,
     });
     const newFriends = new FriendsModel({
@@ -15,7 +54,8 @@ const createAccount = async (userData) => {
     await newFriends.save();
     return await newAccount.save();
   } catch (e) {
-    throw new Error("Error creating account: " + e.message);
+    if (e.name === "DuplicateAccount" || e.name === "ValidationError") throw e;
+    throw new Error("Error creating account: " + toErrorMessage(e));
   }
 };
 

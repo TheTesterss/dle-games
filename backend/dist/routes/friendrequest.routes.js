@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const friendrequest_controller_1 = require("../controllers/friendrequest.controller");
+const router = (0, express_1.Router)();
+router.post("/:id/accept", friendrequest_controller_1.acceptRequestController);
+router.post("/", friendrequest_controller_1.createRequestController);
+router.patch("/:id", friendrequest_controller_1.cancelRequestController);
+router.delete("/:id/deny", friendrequest_controller_1.denyRequestController);
+router.get("/", friendrequest_controller_1.getAllRequestsController);
+router.get("/:id", friendrequest_controller_1.getRequestController);
+exports.default = router;

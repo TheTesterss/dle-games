@@ -7,6 +7,17 @@ const {
   updateAccount,
 } = require("../services/account.service");
 
+const asErrorMessage = (error, fallback = "Unexpected server error") => {
+  if (!error) return fallback;
+  if (typeof error === "string") return error;
+  if (typeof error.message === "string") return error.message;
+  try {
+    return JSON.stringify(error);
+  } catch (_) {
+    return fallback;
+  }
+};
+
 /**
  *
  * @param {Request} req
@@ -18,7 +29,15 @@ const createAccountController = async (req, res) => {
     const user = await createAccount(userData);
     res.status(200).json(user);
   } catch (e) {
-    res.status(500).json({ message: e, code: 500 });
+    if (e.name === "DuplicateAccount") {
+      res.status(409).json({ message: asErrorMessage(e), code: 409 });
+      return;
+    }
+    if (e.name === "ValidationError") {
+      res.status(400).json({ message: asErrorMessage(e), code: 400 });
+      return;
+    }
+    res.status(500).json({ message: asErrorMessage(e), code: 500 });
   }
 };
 
@@ -34,7 +53,7 @@ const updateAccountController = async (req, res) => {
     const user = await updateAccount(userId, userData);
     res.status(200).json(user);
   } catch (e) {
-    res.status(500).json({ message: e, code: 500 });
+    res.status(500).json({ message: asErrorMessage(e), code: 500 });
   }
 };
 
@@ -49,7 +68,7 @@ const deleteAccountController = async (req, res) => {
     await deleteAccount(userId);
     res.status(200).json();
   } catch (e) {
-    res.status(500).json({ message: e, code: 500 });
+    res.status(500).json({ message: asErrorMessage(e), code: 500 });
   }
 };
 
@@ -65,7 +84,7 @@ const getUserController = async (req, res) => {
     const user = await getUser(userId, type);
     res.status(200).json(user);
   } catch (e) {
-    res.status(500).json({ message: e, code: 500 });
+    res.status(500).json({ message: asErrorMessage(e), code: 500 });
   }
 };
 
@@ -78,7 +97,7 @@ const listUsersController = async (req, res) => {
   try {
     res.status(200).json(await listAllUsers());
   } catch (e) {
-    res.status(500).json({ message: e, code: 500 });
+    res.status(500).json({ message: asErrorMessage(e), code: 500 });
   }
 };
 
